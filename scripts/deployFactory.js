@@ -15,7 +15,13 @@ async function main() {
   const organizationFactory = await OrganizationFactory.deploy();
   await organizationFactory.deployed();
 
-  console.log("LetterFactory deployed to:", organizationFactory.address);
+  console.log("OrganizationFactory deployed to:", organizationFactory.address);
+
+  const tx = await organizationFactory.createOrganization("TESTING ORG");
+  const { events } = await tx.wait();
+  const { address } = events.find(Boolean);
+
+  console.log("Created Organization at Address: " + address);
 }
 
 main()
