@@ -11,13 +11,13 @@ contract OrganizationFactory {
     address[] private _organizations;  // Deployed organizations
 
     constructor() {
-        _letterImplementation = address(new Organization());
+        _organizationImplementation = address(new Organization());
     }
 
     function createOrganization(string memory organizationName) external returns (address) {
         address cloned_address = Clones.clone(_organizationImplementation);
         Organization(cloned_address).initOrganization(organizationName, msg.sender);
-        _letters.push(cloned_address);
+        _organizations.push(cloned_address);
         return cloned_address;
     }
 

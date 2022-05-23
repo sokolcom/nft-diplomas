@@ -2,9 +2,9 @@
 
 pragma solidity ^0.8.2;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts-upgradeable/access/Ownable.sol";
-import "@openzeppelin/contracts-upgradeable/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -35,10 +35,13 @@ contract Organization is ERC721Upgradeable, OwnableUpgradeable, AccessControlUpg
         _organizationName = organizationName;
 
         _grantRole(DEFAULT_ADMIN_ROLE, _owner);  // Internal function to set admin
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        // _setupRole(DEFAULT_ADMIN_ROLE, _owner);
         grantRole(READER_ROLE, _owner);
         transferOwnership(_owner);  // Because of init (it's not a constructor)
 
         emit OrganizationCreated(_owner, organizationName);
+        // mintDiploma(0x6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b, "here is JSON with link to doc, etc.");
     }
 
     modifier onlyReader() {
