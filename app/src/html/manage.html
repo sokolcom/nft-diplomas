@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFT Дипломы</title>
+</head>
+<body style="font-family:monospace;background-color:#eeceb8;">
+  <center>
+    <h1 style="font-size:5vw">🏫</h1>
+    Сделать выпускаемые заведением сертификаты <b>открытыми</b> или <b>закрытыми</b>.
+    Если сертификаты <b>открыты</b>, то они доступны для просмотра любому адресу (участнику).
+    <br>
+    Только "владелец" учебного заведения может сделать это.
+    <br>
+    <br>
+    <label for="title">Адрес смарт-контракта учебного заведения:</label>
+    <input type="text" id="contractAddr" size="50" placeholder="0x00000000000000000000000000000000DEADBEEF"/>
+    <table class="tg">
+        <tbody>
+          <tr>
+            <td>
+              <button onclick="App.open()">Открыть</button>
+            </td>
+            <td>
+              <button onclick="App.close()">Закрыть</button>
+            </td>
+          </tr>
+        </tbody>
+    </table>
+    <br>
+    <span id="openStatus"></span>
+    <br>
+    <br>
+    <hr>
+    <br>
+    В случае когда сертификаты <b>закрыты</b>, "владелец" может добавить или удалить пользователя, авторизованного на просмотр сертифката.
+    <br>
+    <br>
+    <label for="title">Адрес пользователя:</label>
+    <input type="text" id="readerAddr" size="50" placeholder="0x00000000000000000000000000000000000000F1"/>
+    <table class="tg">
+        <tbody>
+          <tr>
+            <td>
+              <button onclick="App.addReader()">Добавить</button>
+            </td>
+            <td>
+              <button onclick="App.removeReader()">Удалить</button>
+            </td>
+          </tr>
+        </tbody>
+    </table>
+    <br>
+    <span id="readerStatus"></span>
+    <br>
+    <br>
+    <table class="tg">
+    <tbody>
+      <tr>
+        <td>
+          <form action="index.html">
+            <input type="submit" value="Вернуться назад"/>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+    </table>
+  </center>
+  <script src="manage.js"></script>
+</body>
+<style>
+  input {
+    display: block;
+    margin-bottom: 12px;
+  }
+</style>
+</html>

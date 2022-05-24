@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFT Дипломы</title>
+</head>
+<body style="font-family:monospace;background-color:#eeceb8;">
+  <center>
+    <h1 style="font-size:5vw">🎓</h1>
+    <label for="title">Адрес смарт-контракта учебного заведения:</label>
+    <input type="text" id="contractAddr" size="55" placeholder="0x00000000000000000000000000000000DEADBEEF"/>
+    <label for="certBody">URI сертификата</label>
+    <br>
+    <textarea id="certBody" rows="10" cols="60" placeholder="certBody"></textarea>
+    <br>
+    <label for="recipientAddr">Адрес выпускника:</label>
+    <input type="text" id="recipientAddr" size="55" placeholder="0x00000000000000000000000000000000000000F1"/>
+    <br>
+    <br>
+    <button onclick="App.createCert()">Создать сертификат</button>
+    <br>
+    <br>
+
+    <span id="status"></span>
+
+    <br><br>
+    <table class="tg">
+    <tbody>
+      <tr>
+        <td>
+          <form action="create.html">
+            <input type="submit" value="Вернуться назад"/>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+    </table>
+  </center>
+
+  <br>
+  <script src="createCert.js"></script>
+</body>
+<style>
+  input {
+    display: block;
+    margin-bottom: 12px;
+    font-family: monospace;
+  }
+</style>
+</html>

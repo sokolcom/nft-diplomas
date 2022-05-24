@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFT Дипломы</title>
+</head>
+<body style="font-family:monospace;background-color:#eeceb8;">
+  <center>
+    <h1 style="font-size:5vw">🏫</h1>
+    <label for="title">Назавание учебного заведения</label>
+    <input type="text" id="title" size="55" placeholder="МГТУ им. Н.Э. Баумана" />
+    <button onclick="App.createOrganization()">Создать</button>
+    <br>
+    <br>
+
+    <span id="createdOrganization"></span>
+
+    <br><br>
+    <table class="tg">
+    <tbody>
+      <tr>
+        <td>
+          <form action="create.html">
+            <input type="submit" value="Вернуться назад"/>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+    </table>
+  </center>
+
+  <br>
+  <script src="../createOrganization.js"></script>
+</body>
+<style>
+  input {
+    display: block;
+    margin-bottom: 12px;
+    font-family: monospace;
+  }
+</style>
+</html>

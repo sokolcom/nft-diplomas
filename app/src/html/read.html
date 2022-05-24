@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NFT Дипломы</title>
+</head>
+<body style="font-family:monospace;background-color:#eeceb8;">
+  <center>
+    <h1 style="font-size:5vw">🎓</h1>
+    <label for="title">Адрес смарт-контракта учебного заведения</label>
+    <input type="text" id="contractAddr" size="50" placeholder="0x00000000000000000000000000000000DEADBEEF"/>
+    <label for="title">ID сертификата:</label>
+    <input type="text" id="tokenId" size="50" placeholder="777"/>
+    <button onclick="App.readPage()">Просмотреть сертификат</button>
+    <style type="text/css">
+      .tg .tg-left{font-weight:bold;vertical-align:top;white-space:nowrap;}
+      .tg .tg-right{text-align:justify;vertical-align:top;color:#333333}
+    </style>
+    <span id="read" style="white-space: pre-wrap;"></span>
+    <br><br>
+    <table class="tg">
+    <tbody>
+      <tr>
+        <td>
+          <form action="index.html">
+            <input type="submit" value="Вернуться назад"/>
+          </form>
+        </td>
+      </tr>
+    </tbody>
+    </table>
+  </center>
+  <script src="read.js"></script>
+</body>
+<style>
+  input {
+    display: block;
+    margin-bottom: 12px;
+  }
+</style>
+</html>
