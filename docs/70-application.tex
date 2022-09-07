@@ -1,0 +1,512 @@
+\section*{ПРИЛОЖЕНИЕ A}
+\addcontentsline{toc}{section}{ПРИЛОЖЕНИЕ A}
+
+%\newcounter{lstcount}
+%\counterwithin{lstcount}{section}
+%\SetupFloatingEnvironment{listing}{name=Листинг А.}
+
+
+
+
+
+\begin{lstlisting}[caption=Конфигурация узла сети блокчейн-сети, label = list1, style=realcode]
+#![cfg_attr(not(feature = "std"), no_std)]
+#![recursion_limit = "256"]
+
+
+#[cfg(feature = "std")]
+include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
+
+
+use pallet_grandpa::{
+	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
+};
+use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
+use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, HashedAddressMapping, Runner};
+use pallet_evm::FeeCalculator;
+
+
+parameter_types! {
+	pub const MaxAuthorities: u32 = 100;
+}
+
+impl pallet_aura::Config for Runtime {
+	type AuthorityId = AuraId;
+	type DisabledValidators = ();
+	type MaxAuthorities = MaxAuthorities;
+}
+
+impl pallet_grandpa::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	
+	type KeyOwnerProofSystem = ();
+	
+	type KeyOwnerProof =
+	<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+	
+	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+	KeyTypeId,
+	GrandpaId,
+	)>>::IdentificationTuple;
+	
+	type HandleEquivocation = ();
+	
+	type WeightInfo = ();
+	type MaxAuthorities = ConstU32<32>;
+}
+
+parameter_types! {
+	pub const ChainId: u64 = 100;
+	pub BlockGasLimit: U256 = U256::from(u32::max_value());
+	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+}
+
+impl pallet_evm::Config for Runtime {
+	type FeeCalculator = BaseFee;
+	type GasWeightMapping = ();
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
+	type CallOrigin = EnsureAddressTruncated;
+	type WithdrawOrigin = EnsureAddressTruncated;
+	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+	type Currency = Balances;
+	type Event = Event;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesValue = PrecompilesValue;
+	type ChainId = ChainId;
+	type BlockGasLimit = BlockGasLimit;
+	type OnChargeTransaction = ();
+	type FindAuthor = FindAuthorTruncated<Aura>;
+}
+
+impl pallet_ethereum::Config for Runtime {
+	type Event = Event;
+	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+}
+
+construct_runtime!(
+pub enum Runtime where
+Block = Block,
+NodeBlock = opaque::Block,
+UncheckedExtrinsic = UncheckedExtrinsic
+{
+	System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+	// ...
+	Aura: pallet_aura::{Pallet, Config<T>},
+	Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
+	// ...
+	Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin},
+	EVM: pallet_evm::{Pallet, Config, Call, Storage, Event<T>},
+	// ...
+}
+);
+\end{lstlisting}
+
+%\begin{code}
+	%\caption{Тест}
+	%\captionof{listing}{Конфигурация узла сети блокчейн-сети}
+	%\label{code:1}
+	%\inputminted
+	%[
+	%frame=single,
+	%framerule=0.5pt,
+	%framesep=20pt,
+	%fontsize=\small,
+	%tabsize=4,
+	%linenos,
+	%numbersep=5pt,
+	%xleftmargin=10pt,
+	%breaklines=true
+	%]
+	%{text}
+	%{code/node.rs}
+%\end{code}
+%\pagebreak
+
+
+%\section*{ПРИЛОЖЕНИЕ Б}
+%\addcontentsline{toc}{section}{ПРИЛОЖЕНИЕ Б}
+
+
+\begin{lstlisting}[caption=Код контракта-фабрики учебных заведений, label = list2, style=realcode]
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.2;
+
+import "@openzeppelin/contracts/proxy/Clones.sol";
+import "./Organization.sol";
+
+
+contract OrganizationFactory { 
+	address immutable _organizationImplementation;
+	address[] private _organizations;
+	
+	constructor() {
+		_organizationImplementation = address(new Organization());
+	}
+	
+	function createOrganization(string memory organizationName)
+	external
+	returns (address)
+	{
+		address cloned_address = Clones.clone(_organizationImplementation);
+		Organization(cloned_address)
+		.initOrganization(organizationName, msg.sender);
+		_organizations.push(cloned_address);
+		return cloned_address;
+	}
+	
+	function getOrganizationAmount() public view returns (uint256) {
+		return _organizations.length;
+	}
+	
+	function getOrganizationAddress(uint256 idx) public view returns (address) {
+		require(idx < _organizations.length, "getOrganizationAddress() --- Index out of range!");
+		return _organizations[idx];
+	} 
+}
+\end{lstlisting}
+
+%\SetupFloatingEnvironment{listing}{name=Листинг Б.}
+%\begin{code}
+%	\captionof{listing}{Код контракта-фабрики учебных заведений}
+%	\label{code:2}
+%	[
+%	frame=single,
+%	framerule=0.5pt,
+%	framesep=20pt,
+%	fontsize=\small,
+%	tabsize=4,
+%	linenos,
+%	numbersep=5pt,
+%	xleftmargin=10pt,
+%	breaklines=true
+%	]
+%	{text}
+%	{code/OrganizationFactory.sol}
+%\end{code}
+
+
+\begin{lstlisting}[caption=Код смарт-контракта учебного заведения, label = list3, style=realcode]
+// SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.2;
+
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/ access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
+
+contract Organization is ERC721Upgradeable, OwnableUpgradeable, AccessControlUpgradeable {
+	using Counters for Counters.Counter;
+	
+	Counters.Counter private _diplomaIds;
+	string private _organizationName;
+	uint private constant MAX_NAME_LENGTH = 0xFF;
+	bool private _open;
+	
+	mapping(uint256 => string) private _diplomaURIs;
+	
+	bytes32 private constant READER_ROLE = keccak256("READER_ROLE");  // AccessControl role
+	
+	event OrganizationCreated(address owner, string organizationName);
+	event DiplomaMinted(address owner, string organizationName, uint256 diplomaId);
+	
+	function initOrganization(string memory organizationName, address _owner)
+	public
+	initializer
+	{
+		__ERC721_init("Organization", "ORG");
+		__Ownable_init();
+		
+		require(bytes(organizationName).length <= MAX_NAME_LENGTH, "Organization name's too long!");
+		_organizationName = organizationName;
+		
+		_grantRole(DEFAULT_ADMIN_ROLE, _owner);
+		_grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+		grantRole(READER_ROLE, _owner);
+		transferOwnership(_owner);
+		emit OrganizationCreated(_owner, organizationName);
+	}
+	
+	modifier onlyReader() {
+		if (!_open) {
+			require(hasRole(READER_ROLE, msg.sender), "Restricted to <READER> role only!");
+		}
+		_;
+	}
+	
+	function isReader(address account) public view returns (bool) {
+		if (_open) {
+			return true;
+		}
+		return hasRole(READER_ROLE, account);
+	}
+	
+	function addReader(address account) public virtual onlyOwner {
+		grantRole(READER_ROLE, account);
+	}
+	
+	function removeReader(address account) public virtual onlyOwner {
+		revokeRole(READER_ROLE, account);
+	}
+	
+	function open() public virtual onlyOwner {
+		_open = true;
+	}
+	
+	function close() public virtual onlyOwner {
+		_open = false;
+	}
+	
+	// ---------------------------
+	// View functions ------------
+	// ---------------------------
+	
+	function getOrganizationName() public view onlyReader returns (string memory) {
+		return _organizationName;
+	}
+	
+	function getDiploma(uint256 idx) public view onlyReader returns (string memory) {
+		require((idx <= _diplomaIds.current()), "Index out of range!");
+		return _diplomaURIs[idx];
+	}
+	
+	function getDiplomaAmount() public view onlyReader returns (uint256) {
+		return _diplomaIds.current();
+	}
+	
+	function isOpen() public view returns (bool) {
+		return _open;
+	}
+	
+	// Imposed by OpenZeppelin...
+	function supportsInterface(bytes4 interfaceId)
+	public
+	view
+	virtual
+	override(AccessControlUpgradeable, ERC721Upgradeable)
+	returns (bool)
+	{
+		return
+		interfaceId == type(IAccessControlUpgradeable).interfaceId ||
+		interfaceId == type(IERC721Upgradeable).interfaceId ||
+		interfaceId == type(IERC721MetadataUpgradeable).interfaceId ||
+		super.supportsInterface(interfaceId);
+	}
+	
+	// ---------------------------
+	// Mint functions ------------
+	// ---------------------------
+	
+	function mintDiploma(address recipient, string memory diplomaURI) public onlyOwner returns (uint256) {
+		require(bytes(diplomaURI).length > 0, "Cannot mint empty diploma!");
+		
+		_diplomaIds.increment();
+		uint256 newDiplomaId = _diplomaIds.current();
+		
+		_mint(recipient, newDiplomaId);
+		_diplomaURIs[newDiplomaId] = diplomaURI;
+		// _setTokenURI(newDiplomaId, diplomaURI);
+		
+		emit DiplomaMinted(recipient, _organizationName, newDiplomaId);
+		
+		return newDiplomaId;
+	}
+	
+	function transferFrom(address from, address to, uint256 tokenId)
+	public
+	virtual
+	override
+	{
+		require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
+		
+		_transfer(from, to, tokenId);    
+		_grantRole(READER_ROLE, to);
+	}
+	
+	function safeTransferFrom(address from, address to, uint256 tokenId, bytes memory _data)
+	public
+	virtual
+	override
+	{
+		require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721: transfer caller is not owner nor approved");
+		
+		_safeTransfer(from, to, tokenId, _data);
+		_grantRole(READER_ROLE, to);
+	}
+}
+
+\end{lstlisting}
+
+%\begin{code}
+%	\captionof{listing}{Код смарт-контракта учебного заведения}
+%	\label{code:3}
+%	\inputminted
+%	[
+%	frame=single,
+%	framerule=0.5pt,
+%	framesep=20pt,
+%	fontsize=\small,
+%	tabsize=4,
+%	linenos,
+%	numbersep=5pt,
+%	xleftmargin=10pt,
+%	breaklines=true
+%	]
+%	{text}
+%	{code/Organization.sol}
+%\end{code}
+%\pagebreak
+
+
+
+
+
+%\section*{ПРИЛОЖЕНИЕ В}
+%\addcontentsline{toc}{section}{ПРИЛОЖЕНИЕ В}
+
+\begin{lstlisting}[caption=Создание и чтение сертификата с помощью клиентского приложения, label = list4, style=realcode]
+"use strict";
+
+import organizationABI from "../data/OrganizationABI.json";
+const { ethers } = require("ethers");
+
+
+let organization;
+let org;
+
+function _checkAddress(addr) {
+	if (!ethers.utils.isAddress(addr)) {
+		window.alert("Oops!\nInvalid address!");
+		return false;
+	}
+	return true;
+}
+
+const App = {
+	provider: null,
+	signer: null,
+	
+	start: async function () {},
+	createCert: async function () {
+		const contractAddr = document.getElementById("contractAddr").value;
+		const recipientAddr = document.getElementById("recipientAddr").value;
+		if (!_checkAddress(contractAddr)) {
+			return;
+		}
+		if (!_checkAddress(recipientAddr)) {
+			return;
+		}
+		
+		const certURI = document.getElementById("certBody").value;
+		if (certURI.length == 0) {
+			window.alert("Error! Cannot mint empty NFT!");
+			return;
+		}
+		
+		try {
+			organization = new ethers.Contract(contractAddr, organizationABI, this.provider);
+		} catch (err) {
+			window.alert("Error!\nInvalid Organization Contract Address");
+			return;
+		}
+		
+		const status = document.getElementById("status");
+		status.innerHTML = "Создаем NFT-сертификат... пожалуйста, дождитесь завершения.";
+		
+		org = await organization.deployed();
+		const tx = await org.connect(App.signer).mintDiploma(recipientAddr, certURI);
+		await tx.wait();
+		
+		const tokenId = await org.connect(App.signer).getDiplomaAmount();
+		status.innerHTML = "ID сертификата: " + tokenId;
+		return;
+	},
+	readPage: async function () {
+		const contractAddr = document.getElementById("contractAddr ").value.toString();
+		if (!_checkAddress(contractAddr)) {
+			return;
+		}
+		
+		try {
+			organization = new ethers.Contract(contractAddr, organizationABI, this.provider);
+		} catch (err) {
+			window.alert("Error!\nInvalid Organization Contract Address");
+			return;
+		}
+		
+		let signerAddr = await App.signer.getAddress();
+		if (!(await organization.connect(App.signer).isReader(signerAddr))) {
+			window.alert("Error!\nYou must have the <READER> role in this Organization for this operation!");
+			return;
+		}
+		
+		const tokenId = document.getElementById("tokenId").value;
+		if (tokenId > await organization.connect(App.signer).getDiplomaAmount()) {
+			window.alert("Error!\nInvalid DiplomaID!");
+			return;
+		}
+		
+		const read = document.getElementById("read");
+		read.innerHTML = "<br><br>Загружаем сертификат... пожалуйста, подождите."
+		
+		let organizationName;
+		let diplomaURI;
+		let graduate;
+		try {
+			organizationName = await organization.connect(App.signer)
+			.getOrganizationName();
+			diplomaURI = await organization.connect(App.signer).getDiploma(tokenId);
+			graduate = await organization.connect(App.signer).ownerOf(tokenId);
+		} catch (err) {
+			window.alert("error: unable to View");
+			return;
+		}
+		
+		let pageHTML = "<br><br><table class=\"tg\" style=\"max-width:400px;font-size: 20px\"><tbody>";
+		pageHTML += "<tr><td class=\"tg-left\">Название учебного заведения: </td><td class=\"tg-right\">" + organizationName + "</td></tr>";
+		pageHTML += "<tr><td class=\"tg-left\">URI Диплома об окончании: </td><td class=\"tg-right\">" + diplomaURI + "</td></tr>";
+		pageHTML += "<tr><td class=\"tg-left\">Выпускник: </td><td class=\"tg-right\">" + graduate + "</td></tr>"
+		pageHTML += "</tbody></table>"
+		read.innerHTML = pageHTML;
+		return;
+	}
+};
+
+
+window.App = App;
+window.addEventListener("load", async function () {
+	await window.ethereum.enable();
+	
+	App.provider = new ethers.providers.Web3Provider(window.ethereum);
+	App.signer = App.provider.getSigner();
+	App.start();
+});
+
+\end{lstlisting}
+
+
+%\SetupFloatingEnvironment{listing}{name=Листинг В.}
+%\begin{codec}
+%	\captionof{listing}{Создание и чтение сертификата с помощью клиентского приложения}
+%	\label{code:4}
+%	\inputminted
+%	[
+%	frame=single,
+%	framerule=0.5pt,
+%	framesep=20pt,
+%	fontsize=\small,
+%	tabsize=4,
+%	linenos,
+%	numbersep=5pt,
+%	xleftmargin=10pt,
+%	breaklines=true
+%	]
+%	{text}
+%	{code/client.js}
+%\end{codec}
+%\pagebreak
